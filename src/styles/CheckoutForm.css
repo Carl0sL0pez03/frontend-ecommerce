@@ -1,0 +1,83 @@
+.checkout-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.form-section {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  background-color: #f9fafb;
+  margin: 0.5rem 0.5rem;
+  flex: 1;
+}
+
+.form-section legend {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #1e40af;
+  margin-bottom: 0.5rem;
+}
+
+.checkout-form input,
+.checkout-form select {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.3rem;
+  outline: none;
+  padding-right: 0px
+}
+
+.checkout-form input:focus,
+.checkout-form select:focus {
+  border-color: #1e40af;
+  box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2);
+}
+
+.checkout-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  color: #374151;
+  margin-top: 0.8rem;
+}
+
+.card-input-wrapper {
+  position: relative;
+}
+
+.card-input-wrapper img {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px;
+}
+
+.input-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-top: -0.2rem;
+}
+
+.checkout-form button {
+  margin-top: 1rem;
+  background-color: #1e40af;
+  color: white;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.checkout-form button:hover {
+  background-color: #0f256e;
+}

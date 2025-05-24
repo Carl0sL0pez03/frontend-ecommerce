@@ -12,7 +12,7 @@ export const Checkout = () => {
   const navigate = useNavigate();
   const { user } = useAuth0();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
-  const { products } = useProducts();
+  const { products, triggerRefresh } = useProducts();
 
   const [showModal, setShowModal] = useState(false);
   const [cardType, setCardType] = useState<"visa" | "mastercard" | null>(null);
@@ -37,6 +37,8 @@ export const Checkout = () => {
       cardNumber: saved.cardNumber || "",
       expiry: saved.expiry || "",
       cvc: saved.cvc || "",
+      cardHolder: saved?.cardHolder || user?.name || "",
+      installments: saved.installments || 1,
     };
   });
 
@@ -62,6 +64,8 @@ export const Checkout = () => {
       cardNumber: "",
       expiry: "",
       cvc: "",
+      cardHolder: "",
+      installments: 1,
     });
   };
 
@@ -141,7 +145,7 @@ export const Checkout = () => {
     return Object.values(newErrors).every((e) => e === "");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsProcessing(true);
 
     const order = {
@@ -149,12 +153,14 @@ export const Checkout = () => {
         name: formData.name,
         address: formData.address,
         city: formData.city,
+        email: formData.email,
       },
       payment: {
-        cardNumber: formData.cardNumber
-          .replace(/\D/g, "")
-          .replace(/.(?=.{4})/g, "*"),
+        cardNumber: formData.cardNumber.replace(/\s/g, ""),
         expiry: formData.expiry,
+        cvc: formData.cvc,
+        cardHolder: formData.cardHolder,
+        installments: Number(formData?.installments) || 1,
       },
       items: cart.map((item) => ({
         productId: item._id,
@@ -163,12 +169,36 @@ export const Checkout = () => {
       total: subtotal + baseFee + deliveryFee,
     };
 
-    console.log("Procesando pago con:", order);
-    clearCart();
-    resetForm();
-    localStorage.removeItem("checkoutForm");
-    alert("¡Compra realizada con éxito!");
-    navigate("/home");
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_URL_API}transactions/create`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(order),
+        }
+      );
+
+      const result = await res.json();
+
+      if (result?.error) {
+        alert(result?.error?.error?.messages?.number?.[0]);
+        return;
+      }
+
+      clearCart();
+      resetForm();
+      localStorage.removeItem("checkoutForm");
+      alert("¡Compra realizada con éxito!");
+      triggerRefresh();
+      navigate("/home");
+    } catch (err) {
+      alert("Ocurrió un error al procesar el pago.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (

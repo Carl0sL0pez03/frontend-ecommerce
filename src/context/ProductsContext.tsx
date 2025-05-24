@@ -13,6 +13,8 @@ interface ProductsContextType {
   isLoading: boolean;
   error: string | null;
   refreshProducts: () => void;
+  triggerRefresh: () => void;
+  refreshKey: number;
 }
 
 const ProductsContext = createContext<ProductsContextType>({
@@ -20,6 +22,8 @@ const ProductsContext = createContext<ProductsContextType>({
   isLoading: false,
   error: null,
   refreshProducts: () => {},
+  triggerRefresh: () => {},
+  refreshKey: 0,
 });
 
 export const useProducts = () => useContext(ProductsContext);
@@ -32,11 +36,14 @@ export const ProductsProvider = ({
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(Date.now());
 
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_URL_API}products/getAll`);
+      const response = await fetch(
+        `${import.meta.env.VITE_URL_API}products/getAll`
+      );
       const data = await response.json();
       setProducts(data);
       setError(null);
@@ -47,13 +54,22 @@ export const ProductsProvider = ({
     }
   };
 
+  const triggerRefresh = () => setRefreshKey(Date.now());
+
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [refreshKey]);
 
   return (
     <ProductsContext.Provider
-      value={{ products, isLoading, error, refreshProducts: fetchProducts }}
+      value={{
+        products,
+        isLoading,
+        error,
+        refreshProducts: fetchProducts,
+        triggerRefresh,
+        refreshKey,
+      }}
     >
       {children}
     </ProductsContext.Provider>
