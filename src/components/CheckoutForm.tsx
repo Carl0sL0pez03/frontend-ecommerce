@@ -9,6 +9,9 @@ interface CheckoutFormProps {
   onOpenModal: () => void;
 }
 
+const InputError = ({ message }: { message?: string }) =>
+  message ? <p className="input-error">{message}</p> : null;
+
 export const CheckoutForm = ({
   formData,
   cardType,
@@ -17,12 +20,13 @@ export const CheckoutForm = ({
   onCardNumberChange,
   onOpenModal,
 }: CheckoutFormProps) => {
+  const installmentOptions = [1, 2, 3, 6, 12, 24, 32];
   return (
     <form className="checkout-form">
       <fieldset className="form-section">
         <legend>Datos de Entrega</legend>
 
-        {errors.general && <p className="input-error">{errors.general}</p>}
+        <InputError message={errors?.general} />
 
         <input
           type="text"
@@ -47,7 +51,8 @@ export const CheckoutForm = ({
           onChange={onInputChange}
           required
         />
-        {errors.address && <p className="input-error">{errors.address}</p>}
+        <InputError message={errors?.address} />
+
         <input
           type="text"
           name="city"
@@ -56,7 +61,8 @@ export const CheckoutForm = ({
           onChange={onInputChange}
           required
         />
-        {errors.city && <p className="input-error">{errors.city}</p>}
+
+        <InputError message={errors?.city} />
       </fieldset>
 
       <fieldset className="form-section">
@@ -70,9 +76,8 @@ export const CheckoutForm = ({
           onChange={onInputChange}
           required
         />
-        {errors.cardHolder && (
-          <p className="input-error">{errors.cardHolder}</p>
-        )}
+
+        <InputError message={errors?.cardHolder} />
 
         <div className="card-input-wrapper">
           <input
@@ -93,9 +98,7 @@ export const CheckoutForm = ({
             />
           )}
         </div>
-        {errors.cardNumber && (
-          <p className="input-error">{errors.cardNumber}</p>
-        )}
+        <InputError message={errors?.cardNumber} />
 
         <select
           name="installments"
@@ -103,7 +106,7 @@ export const CheckoutForm = ({
           onChange={onInputChange}
           required
         >
-          {[1, 2, 3, 6, 12].map((n) => (
+          {installmentOptions.map((n) => (
             <option key={n} value={n}>
               {n} cuota{n > 1 ? "s" : ""}
             </option>
@@ -118,7 +121,8 @@ export const CheckoutForm = ({
           onChange={onInputChange}
           required
         />
-        {errors.expiry && <p className="input-error">{errors.expiry}</p>}
+
+        <InputError message={errors?.expiry} />
 
         <input
           type="password"
@@ -129,7 +133,7 @@ export const CheckoutForm = ({
           required
           maxLength={3}
         />
-        {errors.cvc && <p className="input-error">{errors.cvc}</p>}
+        <InputError message={errors?.cvc} />
       </fieldset>
 
       <button type="button" onClick={onOpenModal}>
