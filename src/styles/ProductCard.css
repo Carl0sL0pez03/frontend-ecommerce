@@ -38,3 +38,23 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+.stock {
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin-bottom: 0.5rem;
+}
+
+.disabled-button {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  border: none;
+}
+
+button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  border: none;
+}
