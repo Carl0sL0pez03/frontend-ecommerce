@@ -8,6 +8,7 @@ import { Home } from "./pages/Home";
 import { Checkout } from "./components/Checkout";
 import { Navbar } from "./components/Navbar";
 import { Deliveries } from "./pages/Deliveries";
+import { Transactions } from "./pages/Transactions";
 
 function App() {
   return (
@@ -37,6 +38,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Deliveries />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/transactions"
+            element={
+              <ProtectedRoute>
+                <Transactions />
               </ProtectedRoute>
             }
           />

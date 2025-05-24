@@ -28,6 +28,10 @@ export const Navbar = () => {
           🚚 Entregas
         </button>
 
+        <button className="nav-btn" onClick={() => navigate("/transactions")}>
+          💳 Transacciones
+        </button>
+
         <div className="cart-icon" onClick={() => navigate("/checkout")}>
           🛒<span className="badge">{totalItems}</span>
         </div>
