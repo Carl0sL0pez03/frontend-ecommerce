@@ -7,143 +7,32 @@ import "../styles/Checkout.css";
 import { PaymentModal } from "./PaymentModal";
 import { CheckoutForm } from "./CheckoutForm";
 import { useCart, useProducts } from "../context";
+import {
+  calculateSubtotal,
+  detectCardType,
+} from "./function/AuxComponents.function";
+import { useCheckoutForm } from "./hooks/useCheckoutForm";
 
 export const Checkout = () => {
   const navigate = useNavigate();
   const { user } = useAuth0();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { products, triggerRefresh } = useProducts();
+  const { formData, errors, handleInputChange, resetForm, validateFields } =
+    useCheckoutForm(user || {});
 
   const [showModal, setShowModal] = useState(false);
   const [cardType, setCardType] = useState<"visa" | "mastercard" | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const subtotal = cart.reduce((acc, item) => {
-    const product = products.find((p) => p._id === item._id);
-    return acc + (product ? product.price * item.quantity : 0);
-  }, 0);
+  const subtotal = calculateSubtotal(cart, products);
 
   const baseFee = 5000;
   const deliveryFee = 9000;
-  const storedForm = localStorage.getItem("checkoutForm");
-
-  const [formData, setFormData] = useState(() => {
-    const saved = storedForm ? JSON.parse(storedForm) : {};
-    return {
-      name: saved.name || user?.name || "",
-      email: saved.email || user?.email || "",
-      address: saved.address || "",
-      city: saved.city || "",
-      cardNumber: saved.cardNumber || "",
-      expiry: saved.expiry || "",
-      cvc: saved.cvc || "",
-      cardHolder: saved?.cardHolder || user?.name || "",
-      installments: saved.installments || 1,
-    };
-  });
-
-  const [errors, setErrors] = useState({
-    cardNumber: "",
-    expiry: "",
-    cvc: "",
-    address: "",
-    city: "",
-    general: "",
-  });
 
   useEffect(() => {
     localStorage.setItem("checkoutForm", JSON.stringify(formData));
   }, [formData]);
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      address: "",
-      email: "",
-      city: "",
-      cardNumber: "",
-      expiry: "",
-      cvc: "",
-      cardHolder: "",
-      installments: 1,
-    });
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const detectCardType = (number: string) => {
-    const clean = number.replace(/\s+/g, "");
-    if (/^4[0-9]{0,}$/.test(clean)) return "visa";
-    if (/^5[1-5]/.test(clean) || /^2(2[2-9]|[3-6]|7[01])/.test(clean))
-      return "mastercard";
-    return null;
-  };
-
-  const isValidExpiry = (expiry: string): boolean => {
-    const regex = /^(0[1-9]|1[0-2])\/\d{2}$/;
-    return regex.test(expiry);
-  };
-
-  const isValidCardNumber = (card: string): boolean => {
-    const cleanCard = card.replace(/\D/g, "");
-    let sum = 0;
-    let shouldDouble = false;
-
-    for (let i = cleanCard.length - 1; i >= 0; i--) {
-      let digit = parseInt(cleanCard[i]);
-      if (shouldDouble) {
-        digit *= 2;
-        if (digit > 9) digit -= 9;
-      }
-      sum += digit;
-      shouldDouble = !shouldDouble;
-    }
-
-    return sum % 10 === 0;
-  };
-
-  const validateFields = () => {
-    const newErrors: typeof errors = {
-      cardNumber: "",
-      expiry: "",
-      cvc: "",
-      address: "",
-      city: "",
-      general: "",
-    };
-
-    if (!isValidCardNumber(formData.cardNumber)) {
-      newErrors.cardNumber = "Número de tarjeta inválido";
-    }
-
-    if (!isValidExpiry(formData.expiry)) {
-      newErrors.expiry = "Formato inválido (MM/AA)";
-    }
-
-    if (!/^\d{3}$/.test(formData.cvc)) {
-      newErrors.cvc = "CVC debe tener 3 dígitos";
-    }
-
-    if (!formData.address.trim()) {
-      newErrors.address = "La dirección es requerida";
-    }
-
-    if (!formData.city.trim()) {
-      newErrors.city = "La ciudad es requerida";
-    }
-
-    if (cart.length === 0) {
-      newErrors.general =
-        "El carrito está vacío. Añade productos para continuar.";
-    }
-
-    setErrors(newErrors);
-
-    return Object.values(newErrors).every((e) => e === "");
-  };
 
   const handleSubmit = async () => {
     setIsProcessing(true);
@@ -184,7 +73,9 @@ export const Checkout = () => {
       const result = await res.json();
 
       if (result?.error) {
-        alert(result?.error?.error?.messages?.number?.[0]);
+        alert(
+          result?.error?.error?.messages?.number?.[0] || "Error en el pago"
+        );
         return;
       }
 
@@ -212,7 +103,7 @@ export const Checkout = () => {
           errors={errors}
           onCardNumberChange={(number) => setCardType(detectCardType(number))}
           onOpenModal={() => {
-            if (validateFields()) {
+            if (validateFields(cart.length)) {
               setShowModal(true);
             }
           }}
@@ -227,7 +118,9 @@ export const Checkout = () => {
               <div className="cart-items-scroll">
                 <ul>
                   {cart.map((item) => {
-                    const product = products.find((p) => p._id === item._id);
+                    const product = products.find(
+                      (prod) => prod._id === item._id
+                    );
                     if (!product) return null;
 
                     return (
