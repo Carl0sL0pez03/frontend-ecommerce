@@ -21,9 +21,17 @@ export const Navbar = () => {
         </h1>
       </div>
       <div className="nav-right">
+        <button
+          className="deliveries-link"
+          onClick={() => navigate("/deliveries")}
+        >
+          🚚 Entregas
+        </button>
+
         <div className="cart-icon" onClick={() => navigate("/checkout")}>
           🛒<span className="badge">{totalItems}</span>
         </div>
+
         <div className="user-dropdown">
           <div className="user-icon">👤</div>
           <div className="user-menu">
