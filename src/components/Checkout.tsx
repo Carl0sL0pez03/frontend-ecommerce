@@ -3,22 +3,23 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 
-import { useCart } from "../context/CartContext";
-import { products } from "../data/products";
 import "../styles/Checkout.css";
 import { PaymentModal } from "./PaymentModal";
 import { CheckoutForm } from "./CheckoutForm";
+import { useCart, useProducts } from "../context";
 
 export const Checkout = () => {
   const navigate = useNavigate();
   const { user } = useAuth0();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { products } = useProducts();
+
   const [showModal, setShowModal] = useState(false);
   const [cardType, setCardType] = useState<"visa" | "mastercard" | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const subtotal = cart.reduce((acc, item) => {
-    const product = products.find((p) => p.id === item.id);
+    const product = products.find((p) => p._id === item._id);
     return acc + (product ? product.price * item.quantity : 0);
   }, 0);
 
@@ -156,7 +157,7 @@ export const Checkout = () => {
         expiry: formData.expiry,
       },
       items: cart.map((item) => ({
-        productId: item.id,
+        productId: item._id,
         quantity: item.quantity,
       })),
       total: subtotal + baseFee + deliveryFee,
@@ -196,11 +197,11 @@ export const Checkout = () => {
               <div className="cart-items-scroll">
                 <ul>
                   {cart.map((item) => {
-                    const product = products.find((p) => p.id === item.id);
+                    const product = products.find((p) => p._id === item._id);
                     if (!product) return null;
 
                     return (
-                      <li key={item.id} className="cart-item">
+                      <li key={item._id} className="cart-item">
                         <div className="item-info">
                           <strong>{product.name}</strong>
                           <br />
@@ -212,14 +213,14 @@ export const Checkout = () => {
                             value={item.quantity}
                             onChange={(e) =>
                               updateQuantity(
-                                item.id,
+                                item._id,
                                 Math.min(Number(e.target.value), product.stock)
                               )
                             }
                           />
                         </div>
                         <button
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => removeFromCart(item._id)}
                           className="remove-icon"
                           title="Eliminar producto"
                         >
@@ -235,7 +236,7 @@ export const Checkout = () => {
                 <strong>Total:</strong> COP $
                 {cart
                   .reduce((acc, item) => {
-                    const product = products.find((p) => p.id === item.id);
+                    const product = products.find((p) => p._id === item._id);
                     return acc + (product ? product.price * item.quantity : 0);
                   }, 0)
                   .toLocaleString("es-CO")}

@@ -1,24 +1,18 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-export interface Product {
-  id: number;
-  name: string;
-  price: number;
-  stock: number;
-  image: string;
-}
+import type { Product } from "./ProductsContext";
 
 interface CartItem {
-  id: number;
+  _id: string;
   quantity: number;
 }
 
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
-  removeFromCart: (productId: number) => void;
-  getQuantity: (productId: number) => number;
+  updateQuantity: (productId: string, quantity: number) => void;
+  removeFromCart: (productId: string) => void;
+  getQuantity: (productId: string) => number;
   clearCart: () => void;
 }
 
@@ -44,34 +38,34 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const addToCart = (product: Product) => {
     setCart((prev) => {
-      const item = prev.find((i) => i.id === product.id);
+      const item = prev.find((i) => i._id === product._id);
       if (item) {
         if (item.quantity < product.stock) {
           return prev.map((i) =>
-            i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+            i._id === product._id ? { ...i, quantity: i.quantity + 1 } : i
           );
         } else {
           alert("Stock máximo alcanzado");
           return prev;
         }
       }
-      return [...prev, { id: product.id, quantity: 1 }];
+      return [...prev, { _id: product._id, quantity: 1 }];
     });
   };
 
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number) => {
     if (quantity < 1) return;
     setCart((prev) =>
-      prev.map((i) => (i.id === productId ? { ...i, quantity } : i))
+      prev.map((i) => (i._id === productId ? { ...i, quantity } : i))
     );
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart((prev) => prev.filter((i) => i.id !== productId));
+  const removeFromCart = (productId: string) => {
+    setCart((prev) => prev.filter((i) => i._id !== productId));
   };
 
-  const getQuantity = (productId: number) => {
-    return cart.find((i) => i.id === productId)?.quantity || 0;
+  const getQuantity = (productId: string) => {
+    return cart.find((i) => i._id === productId)?.quantity || 0;
   };
 
   const clearCart = () => {
