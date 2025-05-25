@@ -4,7 +4,7 @@ interface CheckoutFormProps {
   formData: any;
   cardType: "visa" | "mastercard" | null;
   errors: Record<string, string>;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onInputChange: (e: React.ChangeEvent<any>) => void;
   onCardNumberChange: (value: string) => void;
   onOpenModal: () => void;
 }
